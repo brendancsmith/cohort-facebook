@@ -2,6 +2,8 @@ import facebook
 import os
 from getpass import getpass
 
+PRINGUS_DINGUS = '1475782379372580'
+
 
 def get_token():
     # Read the FACEBOOK_TOKEN environment variable,
@@ -19,9 +21,9 @@ def get_token():
 
 def main():
     graph = facebook.GraphAPI(get_token())
-    friends = graph.get_connections("me", "friends")
-    friend_list = [friend['name'] for friend in friends['data']]
-    print friend_list
+
+    pringusDingus = graph.get_object(PRINGUS_DINGUS)
+    print pringusDingus['comments']
 
 
 if __name__ == '__main__':
