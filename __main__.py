@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import facebook
 import os
 from getpass import getpass
@@ -23,7 +24,7 @@ def main():
     graph = facebook.GraphAPI(get_token())
 
     pringusDingus = graph.get_object(PRINGUS_DINGUS)
-    print pringusDingus['comments']
+    print(pringusDingus['comments'])
 
 
 if __name__ == '__main__':
