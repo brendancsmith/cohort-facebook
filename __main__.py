@@ -27,7 +27,17 @@ def main():
     graph = facebook.GraphAPI(get_token())
 
     pringusDingus = graph.get_object(PRINGUS_DINGUS)
-    print(pringusDingus['comments'])
+    pagedComments = graph.paginate(pringusDingus['comments'])
+
+    pagedComments = graph.get_connections(PRINGUS_DINGUS,
+                                          "comments",
+                                          paging=True)
+
+    # for commentsPage in pagedComments  # hits rate limit
+    for i in range(3):
+        commentsPage = next(pagedComments)
+        print()
+        print(commentsPage)
 
 
 if __name__ == '__main__':
