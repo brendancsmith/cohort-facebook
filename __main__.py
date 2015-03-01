@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import facebook
 import os
 from getpass import getpass
@@ -11,6 +12,8 @@ def get_token():
     # or ask for it if none is set.
 
     # On Mac OS X, this can be temporarily set via:
+    #     FACEBOOK_TOKEN=<user access token here>
+    # Or more permanently via:
     #     launchctl setenv FACEBOOK_TOKEN <user access token here>
 
     token = os.environ.get('FACEBOOK_TOKEN')
