@@ -2,9 +2,11 @@
 
 import facebook
 import os
-from getpass import getpass
+import time
+import sys
 
-PRINGUS_DINGUS = '1475782379372580'
+from getpass import getpass
+from nodes import PringusDingus
 
 
 def get_token():
@@ -23,21 +25,35 @@ def get_token():
     return token
 
 
+def print_inplace(line):
+    sys.stdout.write('\r' + line)
+    sys.stdout.flush()
+
+
 def main():
     graph = facebook.GraphAPI(get_token())
 
-    pringusDingus = graph.get_object(PRINGUS_DINGUS)
-    pagedComments = graph.paginate(pringusDingus['comments'])
-
-    pagedComments = graph.get_connections(PRINGUS_DINGUS,
-                                          "comments",
+    pagedComments = graph.get_connections(PringusDingus.ID,
+                                          'comments',
+                                          limit=100,  # FB sticks to 29/30
                                           paging=True)
 
-    # for commentsPage in pagedComments  # hits rate limit
-    for i in range(3):
-        commentsPage = next(pagedComments)
-        print()
-        print(commentsPage)
+    print('Fetching messages from Pringus Dingus...')
+    comments = []
+    numRead = 0
+    for commentsPage in pagedComments:
+        comments += commentsPage
+        numRead += len(commentsPage)
+
+        print_inplace('{} messages read.'.format(numRead))
+
+        # FB's rate limit is ~600 requests per 600 seconds,
+        # but I still exceeded it at a sleep of 1 second.
+        # TODO: implement error handling for exceeding the limit
+        time.sleep(1.1)
+
+    print()
+    print(comments)
 
 
 if __name__ == '__main__':
