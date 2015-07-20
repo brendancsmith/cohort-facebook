@@ -4,6 +4,8 @@ import facebook
 import os
 import time
 import sys
+import pickle
+import tempfile
 
 from getpass import getpass
 from nodes import PringusDingus
@@ -31,6 +33,22 @@ def print_inplace(line):
 
 
 def main():
+    cachePath = os.path.join(tempfile.gettempdir(), 'comments_{}.pickle'.format(PringusDingus.ID))
+
+    comments = None
+    try:
+        cacheFile = open(cachePath, 'r')
+    except IOError:
+        comments = download_comments()
+
+        with open(cachePath, 'w+') as cacheFile:
+            pickle.dump(comments, cacheFile, pickle.HIGHEST_PROTOCOL)
+    else:
+        comments = pickle.load(cacheFile)
+        cacheFile.close()
+
+
+def download_comments():
     graph = facebook.GraphAPI(get_token())
 
     pagedComments = graph.get_connections(PringusDingus.ID,
@@ -52,9 +70,7 @@ def main():
         # TODO: implement error handling for exceeding the limit
         time.sleep(1.1)
 
-    print()
-    print(comments)
-
+    return comments
 
 if __name__ == '__main__':
     main()
