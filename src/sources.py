@@ -1,4 +1,7 @@
 import facebook
+import util
+import time
+
 
 class Facebook(object):
 
@@ -8,7 +11,7 @@ class Facebook(object):
     def download_messenger_chat(self, node):
         graph = facebook.GraphAPI(self.token)
 
-        pagedComments = graph.get_connections(PringusDingus.ID,
+        pagedComments = graph.get_connections(node.ID,
                                               'comments',
                                               limit=100,  # FB sticks to 29/30
                                               paging=True)
@@ -20,7 +23,7 @@ class Facebook(object):
             comments += commentsPage
             numRead += len(commentsPage)
 
-            print_inplace('{} messages read.'.format(numRead))
+            util.print_inplace('{} messages read.'.format(numRead))
 
             # FB's rate limit is ~600 requests per 600 seconds,
             # but I still exceeded it at a sleep of 1 second.

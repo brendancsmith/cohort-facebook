@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import time
-import sys
 import pickle
 import tempfile
 import util
@@ -12,9 +10,6 @@ from nodes import PringusDingus
 from analytics import TextAnalytics
 
 
-def print_inplace(line):
-    sys.stdout.write('\r' + line)
-    sys.stdout.flush()
 
 
 def main():

@@ -1,5 +1,7 @@
 from getpass import getpass
 import os
+import sys
+
 
 def get_env_var(varName, prompt):
     # Read the <varName> environment variable,
@@ -10,3 +12,8 @@ def get_env_var(varName, prompt):
         token = getpass(prompt)
 
     return token
+
+
+def print_inplace(line):
+    sys.stdout.write('\r' + line)
+    sys.stdout.flush()
