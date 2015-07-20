@@ -1,1 +1,5 @@
 ./lib/facebook-sdk
+requests
+pyopenssl
+ndg-httpsclient
+pyasn1
