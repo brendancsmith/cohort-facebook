@@ -53,17 +53,22 @@ def main():
 
     sentiments = read_cache(cachePath) or {}
 
-    textAnalytics = TextAnalytics(ACCOUNT_KEY)
-    for commentId in comments:
-        if commentId not in sentiments:
-            message = comments[commentId]['message']
-            sentiment = textAnalytics.get_sentiment(message)
-            sentiments[commentId] = sentiment
-            print("Analyzed", message, sentiment)
-        else:
-            print("Read", comments[commentId], sentiments[commentId])
-
-    write_cache(cachePath, sentiments)
+    #TODO: batch sentiment
+    try:
+        textAnalytics = TextAnalytics(ACCOUNT_KEY)
+        for commentId in comments:
+            if commentId not in sentiments:
+                message = comments[commentId]['message']
+                sentiment = textAnalytics.get_sentiment(message)
+                sentiments[commentId] = sentiment
+                print("Analyzed", message, sentiment)
+            else:
+                print("Read", comments[commentId]['message'], sentiments[commentId])
+    except (Exception, KeyboardInterrupt):
+        write_cache(cachePath, sentiments)
+        raise
+    else:
+        write_cache(cachePath, sentiments)
 
 
 if __name__ == '__main__':
