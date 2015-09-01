@@ -3,8 +3,7 @@
 import os
 import tempfile
 import util
-import time
-import shelve
+import cache
 import sources
 
 from analytics import TextAnalytics
@@ -19,9 +18,8 @@ def main():
     fbClient = sources.FacebookClient(FACEBOOK_TOKEN)
     pringusDingus = fbClient.get_chat_node(sources.Nodes.PringusDingus)
 
-    cachePath = os.path.join(tempfile.gettempdir(),
-                             'comments_{}.pickle'.format(sources.Nodes.PringusDingus))
-    print("cachePath: {}".format(cachePath))
+    cacheLabel = 'comments_{}'.format(sources.Nodes.PringusDingus)
+    print("cachePath: {}".format(cache.get_cache_path(cacheLabel)))
 
     '''
     comments = []
@@ -35,7 +33,7 @@ def main():
             time.sleep(1.1)
     '''
 
-    comments = shelve.open(cachePath, writeback=True)
+    comments = cache.open(cacheLabel, writeback=True)
 
     if not comments:
         comments = pringusDingus.get_comments()
