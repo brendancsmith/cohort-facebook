@@ -4,8 +4,8 @@ import os
 import tempfile
 import util
 import time
+import shelve
 import sources
-import cache
 
 from analytics import TextAnalytics
 
@@ -16,16 +16,14 @@ def main():
 
     # ----- Download Pringus Dingus -----
 
-    # read Cache
+    fbClient = sources.FacebookClient(FACEBOOK_TOKEN)
+    pringusDingus = fbClient.get_chat_node(sources.Nodes.PringusDingus)
 
-    # get pages of Pringus Dingus
+    cachePath = os.path.join(tempfile.gettempdir(),
+                             'comments_{}.pickle'.format(sources.Nodes.PringusDingus))
+    print("cachePath: {}".format(cachePath))
 
-    pringusDingus = None
-
-    pringusDingusSource = sources.CacheBackedFacebookChat(
-        sources.FacebookChat.Nodes.PringusDingus,
-        FACEBOOK_TOKEN)
-
+    '''
     comments = []
     with pringusDingusSource.download_chat_pages() as pringusDingus:
 
@@ -35,13 +33,23 @@ def main():
             chatPage = filterEmptyComments(chatPage)
             comments += chatPage
             time.sleep(1.1)
+    '''
+
+    comments = shelve.open(cachePath, writeback=True)
+
+    if not comments:
+        comments = pringusDingus.get_comments()
+
+    comments.close()
+
+    pass
 
     # ----- Sentiment Analysis -----
 
     cachePath = os.path.join(tempfile.gettempdir(),
                              'sentiments_{}.pickle'.format(sources.FacebookChat.Nodes.PringusDingus))
 
-    sentiments = cache.read(cachePath) or {}
+    sentiments = shelve.open(cachePath, writeback=True)
 
     # TODO: batch sentiment
     try:
@@ -54,10 +62,10 @@ def main():
             else:
                 print("Read", comment['message'], sentiments[comment['id']])
     except (Exception, KeyboardInterrupt):
-        cache.write(cachePath, sentiments)
+        sentiments.close()
         raise
     else:
-        cache.write(cachePath, sentiments)
+        sentiments.close()
 
 
 if __name__ == '__main__':

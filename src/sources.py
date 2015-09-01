@@ -1,6 +1,7 @@
 # Standard Modules
 
 import os
+import shelve
 import tempfile
 import time
 
@@ -9,49 +10,57 @@ import time
 import facebook
 
 # Project Modules
-import cache
 import util
 from util import AttrDict
 
 
-class FacebookChat(object):
+Nodes = AttrDict({
+    'PringusDingus': '1475782379372580'
+})
 
-    Nodes = AttrDict({
-        'PringusDingus': '1475782379372580'
-    })
 
-    def __init__(self, node, graphApiToken):
-        self.node = node
+class FacebookClient(object):
+
+    def __init__(self, graphApiToken):
         self.token = graphApiToken
 
-    def download_chat(self):
+    def get_chat_node(self, node):
+        graph = facebook.GraphAPI(self.token)
+
+        return FacebookChat(graph, node)
+
+
+class FacebookChat(object):
+
+    # FB's rate limit is ~600 requests per 600 seconds,
+    # but I still exceeded it at a sleep of 1 second.
+    # TODO: implement error handling for exceeding the limit
+    throttleRate = 1.2
+
+    def __init__(self, graph, node):
+        self.node = node
+
+        self.pages = graph.get_connections(self.node,
+                                           'comments',
+                                           limit=100,  # FB still sticks to 29/30
+                                           paging=True)
+
+    def get_comments(self):  # TODO: get rid of output in favor of progress callback
         print('Fetching messages from Pringus Dingus...')
         comments = []
         numRead = 0
-        for commentsPage in self.download_chat_pages():
+        for commentsPage in self.pages:
             comments += commentsPage
             numRead += len(commentsPage)
 
             util.print_inplace('{} messages read.'.format(numRead))
 
-            # FB's rate limit is ~600 requests per 600 seconds,
-            # but I still exceeded it at a sleep of 1 second.
-            # TODO: implement error handling for exceeding the limit
-            time.sleep(1.1)
+            time.sleep(self.throttleRate)
 
         return comments
 
-    def download_chat_pages(self):
-        graph = facebook.GraphAPI(self.token)
 
-        pagedComments = graph.get_connections(self.node,
-                                              'comments',
-                                              limit=100,  # FB sticks to 29/30
-                                              paging=True)
-
-        return pagedComments
-
-
+'''
 class CacheBackedFacebookChat(FacebookChat):
 
     def __init__(self, node, graphApiToken):
@@ -59,29 +68,16 @@ class CacheBackedFacebookChat(FacebookChat):
 
         self.cachePath = os.path.join(tempfile.gettempdir(),
                                       'comments_{}.pickle'.format(node))
-        self.cache = cache.read(self.cachePath) or {}
 
-        self.bypassingSource = bool(self.cache)
-
-    class CacheGuard(object):
-
-        def __init__(self, source, content):
-            self.source = source
-            self.content = content
-
-        def __enter__(self):
-            return self.content
-
-        def __exit__(self, type, value, traceback):
-            self.source.close()
+        self.cache = shelve.open(self.cachePath)
 
     def download_chat_pages(self):
-        if self.bypassingSource:
+        if self.cache:
             def paginate_cached_comments():
                 yield self.cache.values()
 
             pages = paginate_cached_comments()
-            return self.CacheGuard(self, pages)
+            return self.CacheGuard(self.cache, pages)
 
         else:
             def intercept_pages(pages):
@@ -91,8 +87,5 @@ class CacheBackedFacebookChat(FacebookChat):
 
             pages = intercept_pages(super().download_chat_pages())
 
-            return self.CacheGuard(self, pages)
-
-    def close(self):
-        if not self.bypassingSource:
-            cache.write(self.cachePath, self.cache)
+            return self.CacheGuard(self.cache, pages)
+'''
