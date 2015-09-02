@@ -1,8 +1,4 @@
 # Standard Modules
-
-import os
-import shelve
-import tempfile
 import time
 
 # Installed/External Modules
@@ -10,8 +6,8 @@ import time
 import facebook
 
 # Project Modules
-import util
 from util import AttrDict
+import cache
 
 
 Nodes = AttrDict({
@@ -22,70 +18,98 @@ Nodes = AttrDict({
 class FacebookClient(object):
 
     def __init__(self, graphApiToken):
-        self.token = graphApiToken
+        self.graph = facebook.GraphAPI(graphApiToken)
 
-    def get_chat_node(self, node):
-        graph = facebook.GraphAPI(self.token)
+    def download_chat(self, node):
+        self.cacheManager = CacheManager(self.graph, node, 'comments')
 
-        return FacebookChat(graph, node)
+        comments = self.cacheManager.download_connections()
+        return comments
 
 
-class FacebookChat(object):
+class CacheManager(object):
 
     # FB's rate limit is ~600 requests per 600 seconds,
     # but I still exceeded it at a sleep of 1 second.
     # TODO: implement error handling for exceeding the limit
-    throttleRate = 1.2
+    throttleRate = 1.5
 
-    def __init__(self, graph, node):
+    def __init__(self, graph, node, connectionName):
+        self.graph = graph
         self.node = node
+        self.connectionName = connectionName
 
-        self.pages = graph.get_connections(self.node,
-                                           'comments',
-                                           limit=100,  # FB still sticks to 29/30
-                                           paging=True)
+        self.cacheLabel = 'node_{}_{}'.format(node, connectionName)
 
-    def get_comments(self):  # TODO: get rid of output in favor of progress callback
-        print('Fetching messages from Pringus Dingus...')
-        comments = []
-        numRead = 0
-        for commentsPage in self.pages:
-            comments += commentsPage
-            numRead += len(commentsPage)
+    def download_connections(self):
+        self.cache = cache.find(self.cacheLabel)
 
-            util.print_inplace('{} messages read.'.format(numRead))
+        try:
+            if self.cache:
+                self._update_cache()
+                self._backfill_cache()
+            else:
+                self._update_cache()
+        except:
+            self.cache.close()
+            raise
+        else:
+            connections = [self.cache[key] for key in sorted(self.cache)]
+            self.cache.close()
+            return connections
+
+    def _backfill_cache(self):
+        firstPageIndex = min(self.cache.keys())
+
+        # print('backfilling from:', firstPageIndex)
+
+        pageResult = self._request_connections(until=firstPageIndex)
+        self._download_results(pageResult)
+
+    def _update_cache(self):
+        lastPageIndex = max(self.cache.keys())
+
+        # print('updating to:', lastPageIndex)
+
+        pageResult = self._request_connections(since=lastPageIndex)
+        self._download_results(pageResult)
+
+    def _download_results(self, pageResult):
+        if 'data' in pageResult and len(pageResult['data']) == 0:
+            # GraphApi.paginate doesn't handle this case properly
+            return
+
+        pages = self.graph.paginate(pageResult)
+
+        for page in pages:
+            for connection in page:
+                pageIndex = self._get_connection_index(connection)
+                self.cache[pageIndex] = connection
 
             time.sleep(self.throttleRate)
+            # TODO: catch GraphAPIError instead of sleeping
+            #       need to make sure it won't skip pages
 
-        return comments
+    def _get_connection_index(self, connection):
+        return connection['id'].split('_')[1]
 
+    def _request_connections(self, **kwargs):
+        return self.graph.get_connections(self.node,
+                                          self.connectionName,
+                                          limit=100,  # FB still sticks to 29/30
+                                          **kwargs)
 
-'''
-class CacheBackedFacebookChat(FacebookChat):
+    '''
+    def _extract_paging_tokens(self, page):
+        # from urllib.parse import urlparse, parse_qs
 
-    def __init__(self, node, graphApiToken):
-        super().__init__(node, graphApiToken)
+        previousUrl = page['paging']['previous']
+        query = urlparse(previousUrl).query
+        [sinceToken] = parse_qs(query)['since']
 
-        self.cachePath = os.path.join(tempfile.gettempdir(),
-                                      'comments_{}.pickle'.format(node))
+        nextUrl = page['paging']['next']
+        query = urlparse(nextUrl).query
+        [untilToken] = parse_qs(query)['until']
 
-        self.cache = shelve.open(self.cachePath)
-
-    def download_chat_pages(self):
-        if self.cache:
-            def paginate_cached_comments():
-                yield self.cache.values()
-
-            pages = paginate_cached_comments()
-            return self.CacheGuard(self.cache, pages)
-
-        else:
-            def intercept_pages(pages):
-                for page in pages:
-                    self.cache.update({comment['id']: comment for comment in page})
-                    yield page
-
-            pages = intercept_pages(super().download_chat_pages())
-
-            return self.CacheGuard(self.cache, pages)
-'''
+        return untilToken, sinceToken
+    '''
