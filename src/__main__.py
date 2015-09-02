@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import util
-import sources
+import facebookclient
 
 from analytics import TextAnalytics
 
@@ -12,8 +12,8 @@ def main():
 
     # ----- Download Pringus Dingus -----
 
-    fbClient = sources.FacebookClient(FACEBOOK_TOKEN)
-    comments = fbClient.download_chat(sources.Nodes.PringusDingus)
+    fbClient = facebookclient.FacebookClient(FACEBOOK_TOKEN)
+    comments = fbClient.download_chat(facebookclient.Nodes.PringusDingus)
 
     # I think empty comments are thumbs ups?
     nonEmptyComments = list(filter(lambda comment: 'message' in comment, comments))
