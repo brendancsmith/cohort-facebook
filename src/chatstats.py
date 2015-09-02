@@ -69,3 +69,26 @@ def longest_comment_by_users(comments):
         longestCommentByUser[name] = maxCommentLength
 
     return longestCommentByUser
+
+
+def word_count_by_day(comments):
+    wordCountsByDay = defaultdict(int)
+
+    for comment in comments:
+        timestamp = comment['created_time']
+        date = parse_datetime(timestamp).date()
+
+        words = len(comment['message'].split())
+
+        wordCountsByDay[date] += words
+
+    first_day = min(wordCountsByDay.keys())
+    last_day = datetime.now().date()
+    all_dates = (dt.date() for dt in rrule.rrule(rrule.DAILY,
+                                                 dtstart=first_day,
+                                                 until=last_day))
+    for date in all_dates:
+        if date not in wordCountsByDay:
+            wordCountsByDay[date] = 0
+
+    return wordCountsByDay

@@ -1,3 +1,5 @@
+import operator
+
 import chatstats
 
 from plotly import plotly as pyplot
@@ -31,13 +33,14 @@ def num_comments_by_day(comments, filename, **kwargs):
 
     x, y = zip(*sorted(numCommentsByDay.items()))
 
-    trace = Scatter(
-        x=x,
-        y=y,
-        mode='lines'
-    )
+    data = Data([
+        Bar(
+            x=x,
+            y=y
+        )
+    ])
 
-    plotUrl = pyplot.plot([trace], share='secret', filename=filename, **kwargs)
+    plotUrl = pyplot.plot(data, share='secret', filename=filename, **kwargs)
     return plotUrl
 
 
@@ -63,6 +66,58 @@ def longest_comment_by_users(comments, filename, **kwargs):
 
     sortedItems = _sort_by_values(longestCommentByUsers)
     x, y = zip(*sortedItems)
+
+    data = Data([
+        Bar(
+            x=x,
+            y=y
+        )
+    ])
+
+    plotUrl = pyplot.plot(data, share='secret', filename=filename, **kwargs)
+    return plotUrl
+
+
+def word_count_by_day(comments, filename, **kwargs):
+    wordCountsByDay = chatstats.word_count_by_day(comments)
+
+    sortedItems = _sort_by_values(wordCountsByDay)
+    x, y = zip(*sortedItems)
+
+    data = Data([
+        Bar(
+            x=x,
+            y=y
+        )
+    ])
+
+    plotUrl = pyplot.plot(data, share='secret', filename=filename, **kwargs)
+    return plotUrl
+
+
+# --- HYBRID
+
+
+def verbosity_by_day(comments, filename, **kwargs):
+    numCommentsByDay = chatstats.num_comments_by_day(comments)
+    wordCountsByDay = chatstats.word_count_by_day(comments)
+
+    assert len(wordCountsByDay) == len(numCommentsByDay)
+
+    verbosityByDay = {}
+
+    for key in numCommentsByDay:
+        try:
+            verbosity = wordCountsByDay[key] / numCommentsByDay[key]
+        except ZeroDivisionError:
+            if wordCountsByDay[key] != 0:
+                raise RuntimeError("How did we get words with 0 messages?")
+            else:
+                verbosity = 0
+        finally:
+            verbosityByDay[key] = verbosity
+
+    x, y = zip(*sorted(verbosity_by_day.items()))
 
     data = Data([
         Bar(
