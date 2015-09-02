@@ -49,7 +49,7 @@ class CacheManager(object):
                 self._update_cache()
                 self._backfill_cache()
             else:
-                self._update_cache()
+                self._fill_cache()
         except:
             self.cache.close()
             raise
@@ -57,6 +57,10 @@ class CacheManager(object):
             connections = [self.cache[key] for key in sorted(self.cache)]
             self.cache.close()
             return connections
+
+    def _fill_cache(self):
+        pageResult = self._request_connections()
+        self._download_results(pageResult)
 
     def _backfill_cache(self):
         firstPageIndex = min(self.cache.keys())
