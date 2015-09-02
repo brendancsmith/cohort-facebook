@@ -1,5 +1,6 @@
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime
+from statistics import mean
 
 from dateutil.parser import parse as parse_datetime
 from dateutil import rrule
@@ -29,3 +30,42 @@ def num_comments_by_day(comments):
             counter[date] = 0
 
     return counter
+
+
+def avg_word_count_by_user(comments, default_word_count=1):
+    wordCountsByUser = defaultdict(list)
+
+    for comment in comments:
+        name = comment['from']['name']
+
+        words = None
+        if 'message' not in comment:
+            words = default_word_count
+        else:
+            words = len(comment['message'].split())
+
+        wordCountsByUser[name].append(words)
+
+    avgWordCountByUser = dict((user, mean(wordCounts))
+                              for user, wordCounts in wordCountsByUser.items())
+
+    return avgWordCountByUser
+
+
+def longest_comment_by_users(comments):
+    longestCommentByUser = defaultdict(int)
+
+    commentsByUser = defaultdict(list)
+
+    for comment in comments:
+        name = comment['from']['name']
+        commentsByUser[name].append(comment)
+
+    for name, comments in commentsByUser.items():
+
+        commentLengths = (len(comment['message']) for comment in comments)
+        maxCommentLength = max(commentLengths)
+
+        longestCommentByUser[name] = maxCommentLength
+
+    return longestCommentByUser
