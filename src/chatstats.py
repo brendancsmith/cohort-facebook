@@ -92,3 +92,28 @@ def word_count_by_day(comments):
             wordCountsByDay[date] = 0
 
     return wordCountsByDay
+
+
+def daily_activity_by_user(comments):
+    first_day = min(parse_datetime(comment['created_time']).date() for comment in comments)
+    last_day = datetime.now().date()
+    all_dates = [dt.date() for dt in rrule.rrule(rrule.DAILY,
+                                                 dtstart=first_day,
+                                                 until=last_day)]
+    activityByUser = defaultdict(list)
+    for comment in comments:
+        user = comment['from']['name']
+
+        timestamp = comment['created_time']
+        date = parse_datetime(timestamp).date()
+
+        activityByUser[user].append(date)
+
+    make_blank_counter = lambda: Counter(dict(zip(all_dates, [0] * len(all_dates))))
+
+    dailyActivityByUser = {}
+    for user, activity in activityByUser.items():
+        dailyActivityByUser[user] = make_blank_counter()
+        dailyActivityByUser[user].update(activity)
+
+    return dailyActivityByUser

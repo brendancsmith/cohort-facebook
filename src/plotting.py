@@ -3,7 +3,7 @@ import operator
 import chatstats
 
 from plotly import plotly as pyplot
-from plotly.graph_objs import Bar, Data, Scatter
+from plotly.graph_objs import Bar, Data, Scatter, Heatmap, Layout, Figure
 
 # TODO: make a Plotter class or something, and make auto_open False by default
 
@@ -117,7 +117,7 @@ def verbosity_by_day(comments, filename, **kwargs):
         finally:
             verbosityByDay[key] = verbosity
 
-    x, y = zip(*sorted(verbosity_by_day.items()))
+    x, y = zip(*sorted(verbosityByDay.items()))
 
     data = Data([
         Bar(
@@ -127,4 +127,42 @@ def verbosity_by_day(comments, filename, **kwargs):
     ])
 
     plotUrl = pyplot.plot(data, share='secret', filename=filename, **kwargs)
+    return plotUrl
+
+
+# ------
+
+
+def daily_activity_by_user(comments, filename, **kwargs):
+    dailyActivityByUser = chatstats.daily_activity_by_user(comments)
+
+    users = list(dailyActivityByUser.keys())
+    print(dailyActivityByUser)
+    print(dailyActivityByUser[users[0]])
+    dates = sorted(list(dailyActivityByUser[users[0]].keys()))
+
+    z = []
+
+    for user, dailyActivity in dailyActivityByUser.items():
+        new_row = []
+        for date, activity in sorted(dailyActivity.items()):
+            new_row.append(activity)
+        z.append(new_row)
+
+    data = Data([
+        Heatmap(
+            z=z,
+            x=dates,
+            y=users,
+            colorscale='Viridis',
+        )
+    ])
+
+    layout = Layout(title='Messages per day',
+                    xaxis=dict(ticks='', nticks=36),
+                    yaxis=dict(ticks=''))
+
+    fig = Figure(data=data, layout=layout)
+
+    plotUrl = pyplot.plot(fig, filename='datetime-heatmap', validate=False)
     return plotUrl
