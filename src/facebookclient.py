@@ -59,32 +59,27 @@ class CacheManager(object):
             return connections
 
     def _fill_cache(self):
-        pageResult = self._request_connections()
-        self._download_results(pageResult)
+        pages = self._request_pages()
+        self._cache_pages(pages)
 
     def _backfill_cache(self):
         firstPageIndex = min(self.cache.keys())
 
         # print('backfilling from:', firstPageIndex)
 
-        pageResult = self._request_connections(until=firstPageIndex)
-        self._download_results(pageResult)
+        # TODO: always re-caches the first connection
+        pages = self._request_pages(until=firstPageIndex)
+        self._cache_pages(pages)
 
     def _update_cache(self):
         lastPageIndex = max(self.cache.keys())
 
         # print('updating to:', lastPageIndex)
 
-        pageResult = self._request_connections(since=lastPageIndex)
-        self._download_results(pageResult)
+        pages = self._request_pages(since=lastPageIndex)
+        self._cache_pages(pages)
 
-    def _download_results(self, pageResult):
-        if 'data' in pageResult and len(pageResult['data']) == 0:
-            # GraphApi.paginate doesn't handle this case properly
-            return
-
-        pages = self.graph.paginate(pageResult)
-
+    def _cache_pages(self, pages):
         for page in pages:
             for connection in page:
                 pageIndex = self._get_connection_index(connection)
@@ -97,10 +92,11 @@ class CacheManager(object):
     def _get_connection_index(self, connection):
         return connection['id'].split('_')[1]
 
-    def _request_connections(self, **kwargs):
+    def _request_pages(self, **kwargs):
         return self.graph.get_connections(self.node,
                                           self.connectionName,
                                           limit=100,  # FB still sticks to 29/30
+                                          paging=True,
                                           **kwargs)
 
     '''
