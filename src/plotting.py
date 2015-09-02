@@ -136,12 +136,17 @@ def verbosity_by_day(comments, filename, **kwargs):
 def daily_activity_by_user(comments, filename, **kwargs):
     dailyActivityByUser = chatstats.daily_activity_by_user(comments)
 
-    users = list(dailyActivityByUser.keys())
+    def sort_by_full_name(fullName):
+        names = fullName.split()
+        return [names[-1]] + [names[:-1]]
+
+    users = list(sorted(dailyActivityByUser.keys(), key=sort_by_full_name, reverse=True))
     dates = sorted(list(dailyActivityByUser[users[0]].keys()))
 
     z = []
 
-    for user, dailyActivity in dailyActivityByUser.items():
+    for user in users:
+        dailyActivity = dailyActivityByUser[user]
         new_row = []
         for date, activity in sorted(dailyActivity.items()):
             new_row.append(activity)
@@ -152,7 +157,7 @@ def daily_activity_by_user(comments, filename, **kwargs):
             z=z,
             x=dates,
             y=users,
-            colorscale='Viridis',
+            colorscale='YIGnBu',
         )
     ])
 
