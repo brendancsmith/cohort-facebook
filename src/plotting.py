@@ -137,8 +137,6 @@ def daily_activity_by_user(comments, filename, **kwargs):
     dailyActivityByUser = chatstats.daily_activity_by_user(comments)
 
     users = list(dailyActivityByUser.keys())
-    print(dailyActivityByUser)
-    print(dailyActivityByUser[users[0]])
     dates = sorted(list(dailyActivityByUser[users[0]].keys()))
 
     z = []
