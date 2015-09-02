@@ -9,7 +9,7 @@ from analytics import TextAnalytics
 
 def main():
     FACEBOOK_TOKEN = util.get_env_var('FACEBOOK_TOKEN', 'Facebook User Access Token: ')
-    ACCOUNT_KEY = util.get_env_var('AZURE_ACCOUNT_KEY', 'Azure Account Key: ')
+    AZURE_ACCOUNT_KEY = util.get_env_var('AZURE_ACCOUNT_KEY', 'Azure Account Key: ')
 
     # ----- Download Pringus Dingus -----
 
@@ -42,7 +42,7 @@ def main():
 
     # TODO: batch sentiment
     try:
-        textAnalytics = TextAnalytics(ACCOUNT_KEY)
+        textAnalytics = TextAnalytics(AZURE_ACCOUNT_KEY)
         for comment in comments:
             if comment['id'] not in sentiments:
                 sentiment = textAnalytics.get_sentiment(comment['message'])
