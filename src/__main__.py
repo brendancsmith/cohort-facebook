@@ -21,7 +21,10 @@ def main():
 
     # ----- Simple Statistics -----
 
-    plotUrls = [plotting.num_comments_by_user(comments, auto_open=True)]
+    plotUrls = [
+        plotting.num_comments_by_user(comments, auto_open=False),
+        plotting.num_comments_by_day(comments, auto_open=True)
+    ]
     print(plotUrls)
 
     # ----- Sentiment Analysis -----

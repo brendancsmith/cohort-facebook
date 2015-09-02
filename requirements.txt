@@ -1,5 +1,4 @@
 ./lib/facebook-sdk
+./lib/python-dateutil-2.0
 requests
-pyopenssl
-ndg-httpsclient
-pyasn1
+plotly
