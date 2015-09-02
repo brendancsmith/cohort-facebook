@@ -2,6 +2,7 @@
 
 import util
 import facebookclient
+import plotting
 
 from analytics import TextAnalytics
 
@@ -17,6 +18,11 @@ def main():
 
     # I think empty comments are thumbs ups?
     nonEmptyComments = list(filter(lambda comment: 'message' in comment, comments))
+
+    # ----- Simple Statistics -----
+
+    plotUrls = [plotting.num_comments_by_user(comments, auto_open=True)]
+    print(plotUrls)
 
     # ----- Sentiment Analysis -----
     '''

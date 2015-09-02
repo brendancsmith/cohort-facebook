@@ -11,3 +11,7 @@ https://developers.facebook.com/tools/explorer
 ### Azure Account Key
 
 https://datamarket.azure.com/account/keys
+
+### Plotly Setup
+
+https://plot.ly/python/getting-started
