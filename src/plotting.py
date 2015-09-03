@@ -167,5 +167,5 @@ def daily_activity_by_user(comments, filename, **kwargs):
 
     fig = Figure(data=data, layout=layout)
 
-    plotUrl = pyplot.plot(fig, filename='datetime-heatmap', validate=False)
+    plotUrl = pyplot.plot(fig, share='secret', filename=filename, validate=False, **kwargs)
     return plotUrl
