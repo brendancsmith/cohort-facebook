@@ -1,3 +1,6 @@
 [submodule "lib/facebook-sdk"]
 	path = lib/facebook-sdk
 	url = https://github.com/brendancsmith/facebook-sdk.git
+[submodule "lib/punchcard.py"]
+	path = lib/punchcard.py
+	url = https://brendancsmith@github.com/brendancsmith/punchcard.py.git

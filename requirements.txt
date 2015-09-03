@@ -1,5 +1,6 @@
 ./lib/facebook-sdk
 ./lib/python-dateutil-2.0
+./lib/punchcard.py
 requests
 plotly
 statistics

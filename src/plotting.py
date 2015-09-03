@@ -5,6 +5,8 @@ import chatstats
 from plotly import plotly as pyplot
 from plotly.graph_objs import Bar, Data, Scatter, Heatmap, Layout, Figure
 
+import punchcard
+
 # TODO: make a Plotter class or something, and make auto_open False by default
 
 
@@ -169,3 +171,11 @@ def daily_activity_by_user(comments, filename, **kwargs):
 
     plotUrl = pyplot.plot(fig, share='secret', filename=filename, validate=False, **kwargs)
     return plotUrl
+
+
+# --------------
+
+
+def hourly_punchcard(comments):
+    datetimes = list(chatstats.datetimes(comments))
+    return punchcard.make_punchcard(datetimes)

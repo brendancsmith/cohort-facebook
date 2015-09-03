@@ -29,9 +29,11 @@ def main():
         # plotting.longest_comment_by_users(nonEmptyComments, 'pringus-dingus-longest-comments', auto_open=False),
         # plotting.word_count_by_day(nonEmptyComments, 'pringus-dingus-word-count-by-day', auto_open=False),
         # plotting.verbosity_by_day(nonEmptyComments, 'pringus-dingus-verbosity-by-day', auto_open=False),
-        plotting.daily_activity_by_user(comments, 'pringus-dingus-daily-activity-by-user', auto_open=True)
+        plotting.daily_activity_by_user(comments, 'pringus-dingus-daily-activity-by-user', auto_open=False)
     ]
     print(plotUrls)
+
+    print(plotting.hourly_punchcard(comments))
 
     # ----- Sentiment Analysis -----
     '''

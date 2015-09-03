@@ -14,8 +14,7 @@ def num_comments_by_user(comments):
 
 
 def num_comments_by_day(comments):
-    timestamps = (comment['created_time'] for comment in comments)
-    datetimes = map(parse_datetime, timestamps)
+    datetimes = datetimes(comments)
 
     counter = Counter(dt.date() for dt in datetimes)
 
@@ -117,3 +116,9 @@ def daily_activity_by_user(comments):
         dailyActivityByUser[user].update(activity)
 
     return dailyActivityByUser
+
+
+def datetimes(comments):
+    timestamps = (comment['created_time'] for comment in comments)
+    datetimes = map(parse_datetime, timestamps)
+    return datetimes
