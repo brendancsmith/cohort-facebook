@@ -1,11 +1,16 @@
-import operator
-
 import chatstats
 
 from plotly import plotly as pyplot
 from plotly.graph_objs import Bar, Data, Scatter, Heatmap, Layout, Figure
 
 import punchcard
+
+# for wordcloud
+from wordcloud import WordCloud
+import numpy as np
+from PIL import Image, ImageOps
+import random
+import os
 
 # TODO: make a Plotter class or something, and make auto_open False by default
 
@@ -85,6 +90,22 @@ def word_count_by_day(comments, filename, **kwargs):
 
     sortedItems = _sort_by_values(wordCountsByDay)
     x, y = zip(*sortedItems)
+
+    data = Data([
+        Bar(
+            x=x,
+            y=y
+        )
+    ])
+
+    plotUrl = pyplot.plot(data, share='secret', filename=filename, **kwargs)
+    return plotUrl
+
+
+def percent_empty_comments_by_user(emptyComments, nonEmptyComments, filename, **kwargs):
+    percentEmptyCommentsByUser = chatstats.percent_empty_comments_by_user(emptyComments, nonEmptyComments)
+
+    x, y = zip(*reversed(percentEmptyCommentsByUser.most_common()))
 
     data = Data([
         Bar(
@@ -179,3 +200,35 @@ def daily_activity_by_user(comments, filename, **kwargs):
 def hourly_punchcard(comments):
     datetimes = list(chatstats.datetimes(comments))
     return punchcard.make_punchcard(datetimes)
+
+
+def corpus_wordcloud(comments):
+    corpus = chatstats.corpus(comments)
+
+    d = os.path.dirname(__file__)
+    nebraskaMask = np.array(Image.open(os.path.join(d, "../assets/nebraska-mask.png")))
+
+    def red_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
+        redShade = random.randint(100, 255)
+        greenShade = random.randint(0, 60)
+        blueShade = random.randint(0, 60)
+        return "rgb(%d, %d, %d)" % (redShade, greenShade, blueShade)
+
+    # take relative word frequencies into account, lower max_font_size
+    wordcloud = WordCloud(max_font_size=100,
+                          min_font_size=4,
+                          scale=2,
+                          margin=4,
+                          relative_scaling=.5,
+                          mask=nebraskaMask,
+                          color_func=red_color_func,
+                          background_color='white')
+    wordcloud.generate(corpus)
+
+    # create the image
+    image = wordcloud.to_image()
+    image = ImageOps.expand(image,
+                            border=round(max(image.size) * 0.05),
+                            fill='white')
+    image.show()
+    input()

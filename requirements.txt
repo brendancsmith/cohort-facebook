@@ -1,6 +1,16 @@
+# local packages
 ./lib/facebook-sdk
 ./lib/python-dateutil-2.0
 ./lib/punchcard.py
+./lib/word_cloud-master
+
+# for Azure ML
 requests
+
+# for wordcloud
+numpy
+pillow
+
+# other
 plotly
 statistics

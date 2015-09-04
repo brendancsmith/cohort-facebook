@@ -13,6 +13,20 @@ def num_comments_by_user(comments):
     return counter
 
 
+def percent_empty_comments_by_user(emptyComments, nonEmptyComments):
+    numEmptyCommentsByUser = num_comments_by_user(emptyComments)
+    numNonEmptyCommentsByUser = num_comments_by_user(nonEmptyComments)
+
+    # TODO: could break if a user doesn't have one type of comment
+    percentEmptyCommentsByUser = Counter()
+    for user in numNonEmptyCommentsByUser:
+        numEmpty = numEmptyCommentsByUser[user]
+        numTotal = numEmpty + numNonEmptyCommentsByUser[user]
+        percentEmptyCommentsByUser[user] = numEmpty / numTotal
+
+    return percentEmptyCommentsByUser
+
+
 def num_comments_by_day(comments):
     datetimes = datetimes(comments)
 
@@ -122,3 +136,11 @@ def datetimes(comments):
     timestamps = (comment['created_time'] for comment in comments)
     datetimes = map(parse_datetime, timestamps)
     return datetimes
+
+
+def corpus(comments):
+    messages = [comment['message'] for comment in comments
+                if 'message' in comment]
+
+    corpus = '\n'.join(messages)
+    return corpus
