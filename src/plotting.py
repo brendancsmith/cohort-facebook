@@ -198,8 +198,8 @@ def daily_activity_by_user(comments, filename, **kwargs):
 
 
 def hourly_punchcard(comments):
-    datetimes = list(chatstats.datetimes(comments))
-    return punchcard.make_punchcard(datetimes)
+    dts = list(chatstats.datetimes(comments))
+    return punchcard.make_punchcard(dts)
 
 
 def corpus_wordcloud(comments, filePath=None):

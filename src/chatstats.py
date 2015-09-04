@@ -28,9 +28,9 @@ def percent_empty_comments_by_user(emptyComments, nonEmptyComments):
 
 
 def num_comments_by_day(comments):
-    datetimes = datetimes(comments)
+    dts = datetimes(comments)
 
-    counter = Counter(dt.date() for dt in datetimes)
+    counter = Counter(dt.date() for dt in dts)
 
     first_day = min(counter.keys())
     last_day = datetime.now().date()
@@ -134,8 +134,8 @@ def daily_activity_by_user(comments):
 
 def datetimes(comments):
     timestamps = (comment['created_time'] for comment in comments)
-    datetimes = map(parse_datetime, timestamps)
-    return datetimes
+    dts = map(parse_datetime, timestamps)
+    return dts
 
 
 def corpus(comments):
