@@ -202,7 +202,7 @@ def hourly_punchcard(comments):
     return punchcard.make_punchcard(datetimes)
 
 
-def corpus_wordcloud(comments):
+def corpus_wordcloud(comments, filePath=None):
     corpus = chatstats.corpus(comments)
 
     d = os.path.dirname(__file__)
@@ -230,5 +230,9 @@ def corpus_wordcloud(comments):
     image = ImageOps.expand(image,
                             border=round(max(image.size) * 0.05),
                             fill='white')
-    image.show()
-    input()
+
+    if filePath:
+        image.save(filePath)
+    else:
+        image.show()
+        input()
